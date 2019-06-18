@@ -1,14 +1,11 @@
 from util import Stack
 
-def get_path_to_ancestor(fam_tree, child, ancestors, v = set(), path = [], level = 0):
-	v.add(child)
-	path.append(child) 
-
+def get_ancestor(fam_tree, child, ancestors, level = 0):
 	if len(fam_tree[child]) == 0:
 		ancestors.append((level,child))
 	else:
 		for parent in fam_tree[child]:
-			get_path_to_ancestor(fam_tree, parent, ancestors, v, path, level + 1)
+			get_ancestor(fam_tree, parent, ancestors, level + 1)
 
 def earliest_ancestor(graph_init, child):
 	fam_tree = {}
@@ -20,18 +17,16 @@ def earliest_ancestor(graph_init, child):
 			fam_tree[rel[1]] = set()
 		fam_tree[rel[1]].add(rel[0])
 
-	ancestors = []
-
 	if len(fam_tree[child]) == 0:
 		return -1
+	else:
+		ancestors = []
+		get_ancestor(fam_tree, child, ancestors)
 
-	get_path_to_ancestor(fam_tree, child, ancestors)
-	
-	earliest = 0
-	for ancestor in ancestors:
-		if ancestor[0] > earliest:
-			earliest = ancestor[0]
+		earliest = 0
+		#get earliest ancestor
+		for ancestor in ancestors:
+			if ancestor[0] > earliest:
+				earliest = ancestor[0]
 
-	return min([ancestor[1] for ancestor in ancestors if ancestor[0] == earliest])
-
-
+		return min([ancestor[1] for ancestor in ancestors if ancestor[0] == earliest])
