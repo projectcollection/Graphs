@@ -1,4 +1,4 @@
-
+from random import randint
 
 class User:
     def __init__(self, name):
@@ -45,10 +45,19 @@ class SocialGraph:
         self.users = {}
         self.friendships = {}
         # !!!! IMPLEMENT ME
-
+        alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
         # Add users
+        for i in range(numUsers):
+            name = ''
+            for i in range(randint(5,9)):
+                name = name + alphabet[randint(0, len(alphabet) - 1)]
+            self.addUser(name)
 
         # Create friendships
+        for key in self.users:
+            for i in range(randint(0, avgFriendships)):
+                self.addFriendship(key, randint(1, len(self.users)-1))
+
 
     def getAllSocialPaths(self, userID):
         """
