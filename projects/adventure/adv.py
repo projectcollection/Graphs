@@ -46,17 +46,21 @@ def get_nearest_room(explored_map, starting_room):
         new_room = new_room_path[-1]
         for dir, ext in explored_map[new_room[0]].items():
             if ext == '?':
+                print('in for')
                 return new_room_path
 
         if new_room[0] not in visited:
             print('new ROOM', new_room[0], visited)
             visited.append(new_room[0])
+            print(explored_map[new_room[0]].items())
             for exit_dir, exit in explored_map[new_room[0]].items():
                 new_path = new_room_path[::]
                 new_path.append((exit, exit_dir))
+                print('new Path', new_path)
                 q.put(new_path)
-        else:
-            return new_room_path
+        # else:
+        #     print('in else')
+        #     return new_room_path
     return [-1]
 
 explored_map = {}
@@ -68,34 +72,37 @@ done = False
 
 complement_dirs = {'n': 's', 's': 'n', 'e': 'w', 'w': 'e'}
 
-# while not done:
-#     counter = 0
-#     for dir, ext in explored_map[current_room].items():
-#         counter += 1
-#         # print(current_room not in explored_map)
-#         if ext == '?':
-#             player.travel(dir)
-#             traversalPath.append(dir)
-#             new_room = player.currentRoom.id
-#             explored_map[current_room][dir] = new_room 
-#             explored_map[new_room] = transform_exits(player.currentRoom.getExits()) 
-#             explored_map[new_room][complement_dirs[dir]] = current_room
-#             current_room = new_room
-#             break
-#         elif counter == len(explored_map[current_room]) :
-#             pivot_room_path = get_nearest_room(explored_map, current_room)
+while not done:
+    print('current room', player.currentRoom.id)
+    counter = 0
+    for dir, ext in explored_map[current_room].items():
+        counter += 1
+        print(dir, ext)
+        if ext == '?':
+            player.travel(dir)
+            traversalPath.append(dir)
+            new_room = player.currentRoom.id
+            explored_map[current_room][dir] = new_room 
+            explored_map[new_room] = transform_exits(player.currentRoom.getExits()) 
+            explored_map[new_room][complement_dirs[dir]] = current_room
+            current_room = new_room
+            break
+        elif counter == len(explored_map[current_room]) :
+            pivot_room_path = get_nearest_room(explored_map, current_room)
 
-#             if pivot_room_path[-1] == -1:
-#                 done = True
-#             else:
-#                 for i in pivot_room_path:
-#                     if i[1] != '?':
-#                         player.travel(i[1])
-#                         traversalPath.append(i[1])
+            print('pivpt', pivot_room_path)
+
+            if pivot_room_path[-1] == -1:
+                done = True
+            else:
+                for i in pivot_room_path:
+                    if i[1] != '?':
+                        player.travel(i[1])
+                        traversalPath.append(i[1])
                 
-#                 if pivot_room_path[-1][0] >= 0:
-#                     print(player.currentRoom.id)
-#                     current_room = pivot_room_path[-1][0]
+                if pivot_room_path[-1][0] >= 0:
+                    print(player.currentRoom.id)
+                    current_room = pivot_room_path[-1][0]
 
 print(explored_map)
 
