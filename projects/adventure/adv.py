@@ -2,6 +2,8 @@ from room import Room
 from player import Player
 from world import World
 
+from queue import Queue
+
 import random
 
 # Load world
@@ -24,6 +26,102 @@ player = Player("Name", world.startingRoom)
 # Fill this out
 traversalPath = []
 
+# build a graph
+# dfs to a dead end
+    # bfs from a dead end to a room with unexplored exit
+    # break loop if the are no more unexplored paths
+
+# [] to {}
+def transform_exits(exits):
+    dict = {}
+    for ext in exits:
+        dict[ext] = '?'
+    return dict
+
+# get nearest room with ? unknown exit (bfs)
+def get_pivot_room(explored_map, starting_room):
+    visited = []
+    q = Queue()
+    q.put([(starting_room, '?')])
+    while not q.empty():
+        new_room_path = q.get()
+        new_room = new_room_path[-1]
+        for dir, ext in explored_map[new_room[0]].items():
+            if ext == '?':
+                return new_room_path
+
+        if new_room[0] not in visited:
+            visited.append(new_room[0])
+            for exit_dir, exit in explored_map[new_room[0]].items():
+                new_path = new_room_path[::]
+                new_path.append((exit, exit_dir))
+                q.put(new_path)
+    return [-1]
+
+def back_track(map, current_room, trav_path):
+    return_val = [False]
+
+    pivot_room_path = get_pivot_room(map, current_room)
+    if pivot_room_path[-1] == -1:
+        done = True
+        return_val[0] = done
+    else:
+        for i in pivot_room_path:
+            if i[1] != '?':
+                player.travel(i[1])
+                trav_path.append(i[1])
+        
+        if pivot_room_path[-1][0] >= 0:
+            current_room = pivot_room_path[-1][0]
+            return_val.append(current_room )
+    return return_val
+
+explored_map = {}
+explored_map[world.startingRoom.id] = transform_exits(world.startingRoom.getExits())
+
+current_room = world.startingRoom.id 
+
+done = False
+
+complement_dirs = {'n': 's', 's': 'n', 'e': 'w', 'w': 'e'}
+
+while not done:
+    # track number of exits
+    counter = 0  
+    for dir, ext in explored_map[current_room].items():
+        counter += 1
+        if ext == '?':
+            player.travel(dir)
+            # check for loop
+            if player.currentRoom.id in explored_map.keys():
+                # add room num as exit to prev room
+                # prev room is 'currentrRoom' in this case because current_room var is not updated yet
+                explored_map[current_room][dir] = player.currentRoom.id
+                # go back to prev room
+                player.travel(complement_dirs[dir])
+
+                back_track_vals = back_track(explored_map, current_room, traversalPath)
+                if back_track_vals[0]:
+                    done = True
+                else:
+                    current_room = back_track_vals[1]
+            else:
+                traversalPath.append(dir)
+                new_room = player.currentRoom.id
+                explored_map[current_room][dir] = new_room 
+                explored_map[new_room] = transform_exits(player.currentRoom.getExits()) 
+                explored_map[new_room][complement_dirs[dir]] = current_room
+                current_room = new_room
+            break
+        # a dead end
+        elif counter == len(explored_map[current_room]): 
+            back_track_vals = back_track(explored_map, current_room, traversalPath)
+            if back_track_vals[0]:
+                done = True
+            else:
+                current_room = back_track_vals[1]
+
+
 
 
 # TRAVERSAL TEST
@@ -34,6 +132,7 @@ visited_rooms.add(player.currentRoom)
 for move in traversalPath:
     player.travel(move)
     visited_rooms.add(player.currentRoom)
+ 
 
 if len(visited_rooms) == len(roomGraph):
     print(f"TESTS PASSED: {len(traversalPath)} moves, {len(visited_rooms)} rooms visited")

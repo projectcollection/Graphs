@@ -1,4 +1,5 @@
-
+from random import randint
+from queue import Queue
 
 class User:
     def __init__(self, name):
@@ -45,10 +46,28 @@ class SocialGraph:
         self.users = {}
         self.friendships = {}
         # !!!! IMPLEMENT ME
-
+        alphabet = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
         # Add users
+        for i in range(numUsers):
+            name = ''
+            for i in range(randint(5,9)):
+                name = name + alphabet[randint(0, len(alphabet) - 1)]
+            self.addUser(name)
 
         # Create friendships
+        for key in self.users:
+            for _ in range(randint(0, avgFriendships)):
+                new_friend = randint(1, len(self.users)-1)
+                if new_friend not in self.friendships[key] and new_friend != key:
+                    self.addFriendship(key, new_friend)
+
+        # get average friendships per user
+        friendships = 0
+        for key, item in self.friendships.items():
+            friendships += len(item)
+            
+        print('average friendships', friendships/len(self.users))
+
 
     def getAllSocialPaths(self, userID):
         """
@@ -61,12 +80,33 @@ class SocialGraph:
         """
         visited = {}  # Note that this is a dictionary, not a set
         # !!!! IMPLEMENT ME
+        q = Queue()
+        q.put([userID])
+
+        while not q.empty():
+            user_path = q.get()
+            user = user_path[-1]
+
+            if user not in visited.keys():
+                visited[user] = user_path
+                for friend in self.friendships[user]:
+                    new_path = user_path[::]
+                    new_path.append(friend)
+                    q.put(new_path)
+
+        # get average degree of separation per user
+        degrees = 0
+        for key, item in visited.items():
+            degrees += len(item)
+            
+        print('average degree of separation', degrees/len(self.users))
+
         return visited
 
 
 if __name__ == '__main__':
     sg = SocialGraph()
-    sg.populateGraph(10, 2)
-    print(sg.friendships)
+    sg.populateGraph(1000, 5)
+    # print(sg.friendships)
     connections = sg.getAllSocialPaths(1)
-    print(connections)
+    # print(connections)
